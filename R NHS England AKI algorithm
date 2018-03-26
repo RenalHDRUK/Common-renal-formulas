@@ -10,31 +10,14 @@ library(survival)
 
 ##################################################################################
 
-#SELECT ELIGIBLE PATIENTS
-#USE CKD ALGORITHM CODE TO ADD CKD DATE VARIABLES
-#EXCLUDE TESTS AFTER DATE OF DIAGNOSIS WITH CKD 
-
+#SELECT ELIGIBLE PATIENTS (SUBSETTING REDUCES LOOP TIME)
 attach(x)
 x$KDmark<-ifelse(!is.na(x$MDRDeGFR)&x$MDRDeGFR<60,1,0)
 KD<-x[x$KDmark>0,]
 a<-x[x$PatientID %in% KD$PatientID,]
 na.omit(a)
-
-a$CKDate<-ifelse(a$CKDStage>0,a$EntryDate,NA) 
-smalltab<-a[!is.na(a$CKDate),c("PatientID","CKDate")]
-first<-smalltab %>%
-   group_by(PatientID) %>%  
-   arrange(CKDate) %>% 
-   slice(which.min(as.numeric(CKDate))) %>%
-as.data.frame    
-head(first)
-  
-a<-merge(a,as.data.frame(first),all.x=TRUE)
 a$event.date<-as.Date(as.character(a$EntryDate),format="%Y%m%d")
-a$CKDate<-as.Date(as.character(a$CKDate),format="%Y%m%d")
-
-a<-a[!is.na(a$PatientID) & (is.na(a$CKDate)|a$CKDate>a$EntryDate),]
-attach(a)
+attach (a)
 
 ################################################################################
 #CALCULATE MDRD eGFR IF ABSENT
