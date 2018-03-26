@@ -1,0 +1,31 @@
+
+#To extract the value of the first MDRD eGFR recorded 6 months after current test
+#(This code requires installation of dplyr)
+
+library(dplyr)
+
+first<-crea.rep[,c("PatientID","event.date","MDRDeGFR")]
+first$event.date2<-first$event.date+180
+
+#PREFERABLY MATCH A RESULT FROM AFTER 6 MONTHS, AND OTHERWISE SELECT ONE BEFORE IT. 
+indx1<-neardate(first$PatientID,crea.rep$PatientID,first$event.date2,crea.rep$event.date,best="prior",nomatch=NA_integer_)
+first$MDRDeGFR6M<-crea.rep[indx1,"MDRDeGFR"]
+
+
+#REMOVE DATA COLLECTED FROM BEFORE 6 MONTHS:
+maxes<-first %>%
+group_by(PatientID) %>%
+slice(which.max(event.date)) %>%
+as.data.frame
+maxes<-maxes[,c(1,2)]
+colnames(maxes)<-c("PatientID","MaxDate")
+
+#MERGE THE SUBSET TABLE TO THE ORIGINAL TABLE
+first$PatientID<-as.character(first$PatientID)
+maxes$PatientID<-as.character(maxes$PatientID)
+first<-merge(first,maxes)
+first<-first[first$event.date2<=first$MaxDate,c("PatientID","event.date","MaxDate")]
+crea.rep<-merge(crea.rep,first,all.x=TRUE)
+
+#REFORMAT TO ENABLE NORMAL DATAFRAME FUNCTION
+crea.rep$MDRDeGFR6M<-unlist(crea.rep$MDRDeGFR6M)
