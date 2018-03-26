@@ -1,4 +1,4 @@
-#MDRD eGFR
+#Exploring MDRD eGFR
 o<-ifelse(crea.rep$Ethnicity=="Black",1.212,1) #A coefficient is applied to reflect Black ethnicities
 o<-ifelse(is.na(crea.rep$Ethnicity),1,o) #Address data missingness
 p<-ifelse(crea.rep$Gender=="F",0.742,1) #A coefficient is applied to reflect female gender
@@ -6,3 +6,4 @@ crea.rep$MDRDeGFR<-(175*((crea.rep$Creatinine/88.42)^-1.154))*(crea.rep$Age^-0.2
 
 #Age to be supplied in years
 #Creatinine to be supplied in umol/L
+
